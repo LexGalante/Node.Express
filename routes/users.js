@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const readUsers = require('../services/commands/user/read');
+const queryUsers = require('../services/commands/user/query');
 const createUser = require('../services/commands/user/create');
 const updateUser = require('../services/commands/user/update');
 const deleteUser = require('../services/commands/user/delete');
@@ -9,7 +9,20 @@ const moment = require('moment');
 
 /* GET users listing. */
 router.get('/', (req, res, next) => {
-  readUsers((error, users) => {
+  queryUsers.all((error, users) => {
+    if (error) {
+      console.log(error);
+      res.status(500).send(`Ops! ${error}`);
+    }
+
+    res.send(users);
+  });
+});
+/* GET single user. */
+router.get('/:id', (req, res, next) => {
+  const id = req.params.id;
+
+  queryUsers.getById(id, (error, users) => {
     if (error) {
       console.log(error);
       res.status(500).send(`Ops! ${error}`);
@@ -31,6 +44,8 @@ router.post('/', (req, res, next) => {
     user.created_at = moment().format('YYYY-MM-DD HH:mm:ss');
   if (_.isEmpty(user.active))
     user.active = 1;
+  if (_.isEmpty(user.roles) || user.roles.length == 0)
+    user.roles = "guest";
 
   createUser(user, (error) => {
     if (error) {

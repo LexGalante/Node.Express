@@ -23,7 +23,14 @@ const database = {
      * @param {object} options
      * @returns {Promise}
      */
-    query: (sql, parameters, callBack) => db.all(sql, parameters, callBack)
+    query: (sql, parameters, callBack) => db.all(sql, parameters, callBack),
+    /**
+     * Execute DQL commands SELECT etc... retrieve single row
+     * @param {string} url
+     * @param {object} options
+     * @returns {Promise}
+     */
+    single: (sql, parameters, callBack) => db.get(sql, parameters, callBack)
 }
 
 module.exports = database;

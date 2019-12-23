@@ -1,10 +1,18 @@
 const database = require('../../database');
-const _ = require('lodash');
+const crypto = require('../../security/crypto');
 
 module.exports = (user, callBack) => {
-    const command = "INSERT INTO user(login, password, name, created_at, active) VALUES (?, ?, ?, ?, ?)";
-    const parameters = _.values(user);
+    user.password = crypto.crypt(user.password);
+    const command = "INSERT INTO user(login, password, name, created_at, updated_at, active, roles) VALUES (?, ?, ?, ?, ?, ?, ?)";
     database.open();
-    database.execute(command, parameters, callBack);
+    database.execute(command, [
+        user.login,
+        user.password,
+        user.name,
+        user.created_at,
+        user.updated_at,
+        user.active,
+        user.roles
+    ], callBack);
     database.close();
 }
