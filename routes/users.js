@@ -1,15 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const queryUsers = require('../services/commands/user/query');
-const createUser = require('../services/commands/user/create');
-const updateUser = require('../services/commands/user/update');
-const deleteUser = require('../services/commands/user/delete');
+const userCommands = require('../services/commands/user');
 const _ = require('lodash');
 const moment = require('moment');
+const authorize = require('../services/commands/auth/authorize');
 
 /* GET users listing. */
-router.get('/', (req, res, next) => {
-  queryUsers.all((error, users) => {
+router.get('/', authorize(['admin', 'manager']), (req, res, next) => {
+  userCommands.queryUsers.all((error, users) => {
     if (error) {
       console.log(error);
       res.status(500).send(`Ops! ${error}`);
@@ -19,10 +17,10 @@ router.get('/', (req, res, next) => {
   });
 });
 /* GET single user. */
-router.get('/:id', (req, res, next) => {
+router.get('/:id', authorize(['admin', 'manager']), (req, res, next) => {
   const id = req.params.id;
 
-  queryUsers.getById(id, (error, users) => {
+  userCommands.queryUsers.getById(id, (error, users) => {
     if (error) {
       console.log(error);
       res.status(500).send(`Ops! ${error}`);
@@ -32,7 +30,7 @@ router.get('/:id', (req, res, next) => {
   });
 });
 /* POST create user. */
-router.post('/', (req, res, next) => {
+router.post('/', authorize(['admin', 'manager']), (req, res, next) => {
   const user = req.body;
   if (_.isEmpty(user.login))
     throw Error('User [login] is mandatory');
@@ -47,7 +45,7 @@ router.post('/', (req, res, next) => {
   if (_.isEmpty(user.roles) || user.roles.length == 0)
     user.roles = "guest";
 
-  createUser(user, (error) => {
+  userCommands.createUser(user, (error) => {
     if (error) {
       console.log(error);
       res.status(500).send(`Ops! ${error}`);
@@ -57,11 +55,11 @@ router.post('/', (req, res, next) => {
   });
 });
 /* PUT update user. */
-router.put('/:id', (req, res, next) => {
+router.put('/:id', authorize(['admin', 'manager']), (req, res, next) => {
   const id = req.params.id;
   const user = req.body;
 
-  updateUser(id, user, (error) => {
+  userCommands.updateUser(id, user, (error) => {
     if (error) {
       console.log(error);
       res.status(500).send(`Ops! ${error}`);
@@ -71,10 +69,10 @@ router.put('/:id', (req, res, next) => {
   });
 });
 /* DELETE remove user. */
-router.delete('/:id', (req, res, next) => {
+router.delete('/:id', authorize(['admin']), (req, res, next) => {
   const id = req.params.id;
 
-  deleteUser(id, (error) => {
+  userCommands.deleteUser(id, (error) => {
     if (error) {
       console.log(error);
       res.status(500).send(`Ops! ${error}`);
